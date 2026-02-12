@@ -27,7 +27,11 @@ public class Main {
                 case 2 -> ejecutarVenta(sc, miInventario, miCaja);
                 case 3 -> miCaja.mostrarResumen();
                 case 4 -> ejecutarVentaRapida(sc, miCaja);
-                case 5 -> System.out.println("Saliendo...");
+                case 5 -> {
+                    System.out.println("Generando Reporte del Día...");
+                    Reportes.guardarCierre(miInventario.getListaProductos(),miCaja.getIngresosTotales());
+                    System.out.println("Saliendo del sistema...: ");
+                }
                 default -> System.out.println("Opción no válida.");
             }
         } while (opcion != 5);

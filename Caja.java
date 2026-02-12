@@ -1,4 +1,5 @@
 import java.sql.SQLOutput;
+import java.util.ArrayList;
 
 public class Caja {
     private double ingresosTotales;
@@ -31,5 +32,12 @@ public class Caja {
 
     public void mostrarResumen(){
         System.out.println("\n Ventas totales acumuladas: $" + ingresosTotales);
+    }
+    public void generarCierreDelDia(ArrayList<Producto> inventarioFinal){
+        //Aqui se crear un archivo el cual lleva el reporte del dia cada que se cierra la caja "cierre_2026_02_11.txt"
+        //guardariamos: Producto | Vendidos | Dinero Recaudado
+    }
+    public double getIngresosTotales(){
+        return this.ingresosTotales;
     }
 }

@@ -36,4 +36,19 @@ public class Inventario {
         }
         return null;
     }
+    public void reiniciarInventario(){
+        this.lista.clear(); // se limpia el inventario de ayer
+        //Carga los valores predeterminados del dia
+        lista.add(new Producto("Cheescake de Frutos", 12000, 12));
+        lista.add(new Producto("Milhoja", 10000, 12));
+        lista.add(new Producto("Merengon", 10000, 5));
+        lista.add(new Producto("Tiramisu", 8000, 12));
+        lista.add(new Producto("Croissant Dulce", 7000, 4));
+        lista.add(new Producto("Postre de la Casa", 8000, 12));
+        System.out.println("--- Inventario Reiniciado ---");
+    }
+
+    public ArrayList<Producto>getListaProductos() {
+        return this.lista;
+    }
 }
