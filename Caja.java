@@ -1,8 +1,40 @@
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 
 public class Caja {
     private double ingresosTotales;
+    private ArrayList<RegistroVenta> ventasExtras;
+
+    public Caja() {
+        this.ingresosTotales = 0;
+        this.ventasExtras = new ArrayList<>();
+    }
+
+    public class RegistroVenta {
+        String nombre;
+        int cantidad;
+        double total;
+        public RegistroVenta(String nombre, int cantidad, double total){
+            this.nombre = nombre;
+            this.cantidad = cantidad;
+            this.total = total;
+        }
+    }
+
+    public void registrarVentaDirecta(String nombre, int cantidad, double precioUnitario){
+        double subtotal = precioUnitario * cantidad;
+        this.ingresosTotales += subtotal;
+
+        ventasExtras.add(new RegistroVenta(nombre, cantidad, subtotal));
+        System.out.println("Se registra venta de $ " + subtotal + "por " + nombre);
+    }
+
+    public ArrayList<RegistroVenta> getVentasExtras() {
+        return ventasExtras;
+    }
+
+    public ArrayList<RegistroVenta> getHistorialVentasExtras() {
+        return ventasExtras;
+    }
 
     //Metodo para las ventas del inventario
     public void procesarVenta(Producto p, int cantidad) {
