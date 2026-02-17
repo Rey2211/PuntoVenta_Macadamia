@@ -1,55 +1,54 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Interfaz extends JFrame {
 
+    // 1. ATRIBUTOS (Solo se declaran una vez aquí arriba)
     private Inventario inventario;
     private Caja caja;
     private JTextArea areaPantalla;
     private JButton btnVenta, btnInventario, btnCerrar;
+    private String rolActual;
 
     public Interfaz() {
+        // Inicialización
         inventario = new Inventario();
         caja = new Caja();
 
         // Configuración de la Ventana
-        setTitle("Macadamia Pastelería y Café - Punto de Venta");
+        setTitle("Macadamia Pastelería y Café - POS");
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Área de texto (Pantalla)
+        // Área de texto
         areaPantalla = new JTextArea();
         areaPantalla.setEditable(false);
         areaPantalla.setFont(new Font("Monospaced", Font.PLAIN, 13));
         areaPantalla.setBackground(new Color(250, 250, 245));
         add(new JScrollPane(areaPantalla), BorderLayout.CENTER);
 
-        // Panel de Botones Principal
+        // Panel de Botones
         JPanel panelBotones = new JPanel(new GridLayout(1, 3, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        btnVenta = new JButton("REALIZAR VENTA");
-        btnInventario = new JButton("VER INVENTARIO");
-        btnCerrar = new JButton("   CERRAR SISTEMA");
-
-        // Colores temáticos
-        btnVenta.setBackground(new Color(180, 230, 180));
-        btnInventario.setBackground(new Color(180, 210, 230));
-        btnCerrar.setBackground(new Color(230, 180, 180));
+        btnVenta = new JButton("VENTA");
+        btnInventario = new JButton("INVENTARIO");
+        btnCerrar = new JButton("CERRAR");
 
         panelBotones.add(btnVenta);
         panelBotones.add(btnInventario);
         panelBotones.add(btnCerrar);
         add(panelBotones, BorderLayout.SOUTH);
 
-        // --- EVENTOS ---
+        // --- EVENTOS DE LOS BOTONES ---
 
         btnInventario.addActionListener(e -> {
             mostrarInventario();
-            int respuesta = JOptionPane.showConfirmDialog(this, "¿Deseas editar el precio de algún producto?", "Gestión", JOptionPane.YES_NO_OPTION);
-            if (respuesta == JOptionPane.YES_OPTION) {
-                mostrarDialogoEditarPrecio();
+            if ("ADMIN".equals(rolActual)) {
+                int resp = JOptionPane.showConfirmDialog(this, "¿Editar precio?", "Admin", JOptionPane.YES_NO_OPTION);
+                if (resp == JOptionPane.YES_OPTION) mostrarDialogoEditarPrecio();
             }
         });
 
@@ -57,13 +56,20 @@ public class Interfaz extends JFrame {
 
         btnCerrar.addActionListener(e -> {
             Reportes.guardarCierre(inventario.getListaProductos(), caja);
-            JOptionPane.showMessageDialog(this, "Reporte generado. ¡Hasta luego!");
+            JOptionPane.showMessageDialog(this, "Reporte generado.");
             System.exit(0);
         });
     }
 
+    // 2. MÉTODOS DE APOYO (Fuera del constructor, dentro de la clase)
+
+    public void setRolActual(String rol) {
+        this.rolActual = rol;
+        setTitle("Macadamia POS - Sesión: " + rol);
+    }
+
     private void mostrarInventario() {
-        areaPantalla.setText("====== ESTADO DEL INVENTARIO ======\n\n");
+        areaPantalla.setText("====== INVENTARIO ======\n\n");
         for (Producto p : inventario.getListaProductos()) {
             areaPantalla.append(String.format("- %-18s | Stock: %-3d | Precio: $%.2f\n",
                     p.getnombre(), p.getstock(), p.getprecio()));
@@ -71,82 +77,66 @@ public class Interfaz extends JFrame {
     }
 
     private void mostrarDialogoDeVenta() {
-        // Preparar componentes del formulario
-        JComboBox<String> comboProductos = new JComboBox<>();
-        for (Producto p : inventario.getListaProductos()) {
-            comboProductos.addItem(p.getnombre());
-        }
+        JComboBox<String> comboProd = new JComboBox<>();
+        for (Producto p : inventario.getListaProductos()) comboProd.addItem(p.getnombre());
 
-        JTextField txtCantidad = new JTextField("1");
+        JTextField txtCant = new JTextField("1");
+        JComboBox<String> comboPago = new JComboBox<>(new String[]{"Efectivo", "Nequi", "Daviplata"});
 
-        // --- Selector de Métodos de Pago ---
-        String[] metodos = {"Efectivo", "Nequi", "Daviplata"};
-        JComboBox<String> comboPagos = new JComboBox<>(metodos);
+        JPanel pan = new JPanel(new GridLayout(0, 1));
+        pan.add(new JLabel("Producto:")); pan.add(comboProd);
+        pan.add(new JLabel("Cantidad:")); pan.add(txtCant);
+        pan.add(new JLabel("Pago:")); pan.add(comboPago);
 
-        JPanel formulario = new JPanel(new GridLayout(0, 1, 5, 5));
-        formulario.add(new JLabel("Seleccione Producto:"));
-        formulario.add(comboProductos);
-        formulario.add(new JLabel("Cantidad:"));
-        formulario.add(txtCantidad);
-        formulario.add(new JLabel("Método de Pago:"));
-        formulario.add(comboPagos);
-
-        int result = JOptionPane.showConfirmDialog(this, formulario, "Nueva Venta", JOptionPane.OK_CANCEL_OPTION);
-
-        if (result == JOptionPane.OK_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, pan, "Venta", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             try {
-                String nombre = (String) comboProductos.getSelectedItem();
-                int cant = Integer.parseInt(txtCantidad.getText());
-                String medioPago = (String) comboPagos.getSelectedItem();
+                String nombre = (String) comboProd.getSelectedItem();
+                int cant = Integer.parseInt(txtCant.getText());
+                String pago = (String) comboPago.getSelectedItem();
 
                 Producto p = inventario.buscarPorNombre(nombre);
                 if (p != null && p.getstock() >= cant) {
                     double total = p.getprecio() * cant;
-
-
-                    // Llamamos a la nueva lógica de la Caja
-                    caja.registrarVenta(nombre, cant, total, medioPago);
-
-                    areaPantalla.setText("VENTA REGISTRADA\n------------------\n" +
-                            "Producto: " + nombre + "\n" +
-                            "Cantidad: " + cant + "\n" +
-                            "Pago vía: " + medioPago + "\n" +
-                            "Total:    $" + total);
+                    p.reducirStock(cant);
+                    caja.registrarVenta(nombre, cant, total, pago);
+                    areaPantalla.setText("Venta OK: " + nombre + " x" + cant + " (" + pago + ")");
                 } else {
                     JOptionPane.showMessageDialog(this, "Stock insuficiente.");
                 }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Error: Ingrese una cantidad válida.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Datos inválidos.");
             }
         }
     }
 
     private void mostrarDialogoEditarPrecio() {
         JComboBox<String> combo = new JComboBox<>();
-        for (Producto p : inventario.getListaProductos()) { combo.addItem(p.getnombre()); }
-        JTextField txtPrecio = new JTextField();
-
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.add(new JLabel("Producto:"));
-        panel.add(combo);
-        panel.add(new JLabel("Nuevo Precio:"));
-        panel.add(txtPrecio);
-
-        if (JOptionPane.showConfirmDialog(this, panel, "Editar Precio", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            try {
-                double nuevoP = Double.parseDouble(txtPrecio.getText());
-                Producto p = inventario.buscarPorNombre((String) combo.getSelectedItem());
-                if (p != null) {
-                    p.setPrecio(nuevoP);
-                    mostrarInventario();
-                }
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Precio no válido."); }
+        for (Producto p : inventario.getListaProductos()) {
+            combo.addItem(p.getnombre());
         }
-    }
+        JTextField txtPre = new JTextField();
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new Interfaz().setVisible(true);
-        });
+        JPanel pan = new JPanel(new GridLayout(0, 1));
+        pan.add(new JLabel("Seleccione Producto:"));
+        pan.add(combo);
+        pan.add(new JLabel("Ingrese Nuevo Precio:"));
+        pan.add(txtPre);
+
+        if (JOptionPane.showConfirmDialog(this, pan, "Editar Precio - MODO ADMIN", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            try {
+                double nuevoP = Double.parseDouble(txtPre.getText());
+                String nombreProd = (String) combo.getSelectedItem();
+
+                // --- CONEXIÓN CON LA BASE DE DATOS ---
+                // Aquí es donde ocurre la magia: guardamos permanentemente
+                inventario.actualizarPrecioEnDB(nombreProd, nuevoP);
+
+                areaPantalla.setText("PRECIO ACTUALIZADO\n" + nombreProd + " ahora cuesta $" + nuevoP);
+                mostrarInventario(); // Refrescamos la pantalla para ver el cambio
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: Ingrese un valor numérico válido.");
+            }
+        }
     }
 }

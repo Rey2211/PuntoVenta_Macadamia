@@ -3,24 +3,24 @@ import javax.swing.UIManager;
 
 public class Main {
     public static void main(String[] args) {
-        // Opcional: Intentar que la interfaz se vea como el sistema operativo (Windows/Mac)
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            // Si falla, usará el estilo básico de Java
-        }
-
-        // Lanzamos la interfaz de forma segura en el hilo de eventos de Swing
         SwingUtilities.invokeLater(() -> {
-            Interfaz ventana = new Interfaz();
+            // 1. Abrimos el Login primero
+            Login ventanaLogin = new Login(null);
+            ventanaLogin.setVisible(true);
 
-            // Centrar la ventana en la pantalla
-            ventana.setLocationRelativeTo(null);
+            // 2. Solo si el usuario se autenticó correctamente...
+            if (ventanaLogin.isAutenticado()) {
+                Interfaz gui = new Interfaz();
 
-            // Hacerla visible
-            ventana.setVisible(true);
+                // 3. ¡Aquí pasamos el rol!
+                gui.setRolActual(ventanaLogin.getRolUsuario());
 
-            System.out.println("Macadamia POS: Sistema iniciado correctamente.");
+                gui.setLocationRelativeTo(null);
+                gui.setVisible(true);
+            } else {
+                // Si cerró el login sin entrar, cerramos todo
+                System.exit(0);
+            }
         });
     }
 }

@@ -1,26 +1,27 @@
 public class Producto {
     private String nombre;
-    private double precio;
     private int stock;
+    private double precio;
 
     public Producto(String nombre, double precio, int stock) {
         this.nombre = nombre;
         this.precio = precio;
-        this.stock =stock;
+        this.stock = stock;
+    }
+    // METODO PARA REDUCIR EL STOCK
+    public void reducirStock(int cantidad) {
+        this.stock -= cantidad;
     }
 
-    // El atributo Get nos ayuda a "leer" los datos
-    public String getnombre() { return nombre; }
-    public double getprecio() { return precio; }
-    public int getstock() { return stock; }
-
-    // El atributo Set nos ayuda a actualizar el stock luego de una venta
-
-    public void setStock(int stock) { this.stock = stock; }
-
+    // METODO PARA CAMBIAR EL PRECIO (Lo necesitamos para el modo Admin)
     public void setPrecio(double precio) {
         this.precio = precio;
     }
+
+    // Asegúrate de tener estos getters también
+    public String getnombre() { return nombre; }
+    public int getstock() { return stock; }
+    public double getprecio() { return precio; }
 
 
 }
