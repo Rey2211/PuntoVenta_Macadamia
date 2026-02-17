@@ -1,75 +1,74 @@
 import java.util.ArrayList;
 
 public class Caja {
-    private double ingresosTotales;
-    private ArrayList<RegistroVenta> ventasExtras;
+    // Variables para separar el dinero por "bolsillos"
+    private double efectivo;
+    private double nequi;
+    private double daviplata;
+
+    // Lista para el historial de ventas del día
+    private ArrayList<RegistroVenta> historialVentas;
 
     public Caja() {
-        this.ingresosTotales = 0;
-        this.ventasExtras = new ArrayList<>();
+        this.efectivo = 0.0;
+        this.nequi = 0.0;
+        this.daviplata = 0.0;
+        this.historialVentas = new ArrayList<>();
     }
 
-    public class RegistroVenta {
-        String nombre;
-        int cantidad;
-        double total;
-        public RegistroVenta(String nombre, int cantidad, double total){
+    /**
+     * Registra una venta procesada desde el inventario.
+     * @param producto Nombre del producto vendido.
+     * @param cantidad Unidades vendidas.
+     * @param total Valor total de la transacción.
+     * @param metodoPago "Efectivo", "Nequi" o "Daviplata".
+     */
+    public void registrarVenta(String producto, int cantidad, double total, String metodoPago) {
+        // 1. Sumamos al contador específico según el método de pago
+        switch (metodoPago) {
+            case "Efectivo":
+                this.efectivo += total;
+                break;
+            case "Nequi":
+                this.nequi += total;
+                break;
+            case "Daviplata":
+                this.daviplata += total;
+                break;
+        }
+
+        // 2. Guardamos el registro en el historial para el reporte detallado
+        // Incluimos el método de pago en el nombre para que aparezca en el .txt
+        String detalle = producto + " [" + metodoPago + "]";
+        historialVentas.add(new RegistroVenta(detalle, cantidad, total));
+    }
+
+    // --- GETTERS PARA EL REPORTE ---
+
+    public double getEfectivo() { return efectivo; }
+
+    public double getNequi() { return nequi; }
+
+    public double getDaviplata() { return daviplata; }
+
+    public double getIngresosTotales() {
+        return efectivo + nequi + daviplata;
+    }
+
+    public ArrayList<RegistroVenta> getHistorialVentas() {
+        return historialVentas;
+    }
+
+    // --- CLASE INTERNA PARA EL REGISTRO ---
+    public static class RegistroVenta {
+        public String nombre;
+        public int cantidad;
+        public double total;
+
+        public RegistroVenta(String nombre, int cantidad, double total) {
             this.nombre = nombre;
             this.cantidad = cantidad;
             this.total = total;
         }
-    }
-
-    public void registrarVentaDirecta(String nombre, int cantidad, double precioUnitario){
-        double subtotal = precioUnitario * cantidad;
-        this.ingresosTotales += subtotal;
-
-        ventasExtras.add(new RegistroVenta(nombre, cantidad, subtotal));
-        System.out.println("Se registra venta de $ " + subtotal + "por " + nombre);
-    }
-
-    public ArrayList<RegistroVenta> getVentasExtras() {
-        return ventasExtras;
-    }
-
-    public ArrayList<RegistroVenta> getHistorialVentasExtras() {
-        return ventasExtras;
-    }
-
-    //Metodo para las ventas del inventario
-    public void procesarVenta(Producto p, int cantidad) {
-        if (p == null) {
-            System.out.println("Error: Producto no encontrado");
-            return;
-        }
-        if (p.getstock() >= cantidad) {
-            double total = p.getprecio() * cantidad;
-            p.setStock(p.getstock() - cantidad); //Actualiza el Stock del producto
-            ingresosTotales += total;
-            System.out.println("Venta Realizada: " + p.getnombre() + " x" + cantidad);
-            System.out.println("Total: $" + total);
-        } else {
-            System.out.println("No hay suficiente Stock. Disponible: " + p.getstock());
-        }
-    }
-
-    //Metodo para ventas fuera del inventario
-
-    public void registrarVentaDirecta(String producto, double precio, int cantidad) {
-        double total = precio * cantidad;
-        ingresosTotales += total;
-        System.out.println("Venta Realizada: " + producto + " x" + cantidad);
-        System.out.println("Total: $" + total);
-    }
-
-    public void mostrarResumen(){
-        System.out.println("\n Ventas totales acumuladas: $" + ingresosTotales);
-    }
-    public void generarCierreDelDia(ArrayList<Producto> inventarioFinal){
-        //Aqui se crear un archivo el cual lleva el reporte del dia cada que se cierra la caja "cierre_2026_02_11.txt"
-        //guardariamos: Producto | Vendidos | Dinero Recaudado
-    }
-    public double getIngresosTotales(){
-        return this.ingresosTotales;
     }
 }

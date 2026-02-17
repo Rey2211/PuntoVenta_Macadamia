@@ -5,41 +5,46 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Reportes {
-    public static void guardarCierre(ArrayList<Producto> inventario,
-                                     ArrayList<Caja.RegistroVenta> ventasExtras,
-                                     double totalCaja) {
+
+    // Cambiamos los parámetros: ahora recibe la lista de productos y el objeto Caja completo
+    public static void guardarCierre(ArrayList<Producto> inventario, Caja caja) {
 
         String fecha = LocalDate.now().toString();
         String nombreArchivo = "Reporte_" + fecha + ".txt";
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(nombreArchivo))) {
-            writer.println("======= REPORTE DE VENTAS - " + fecha + " =======");
-            writer.println("Dinero TOTAL en caja: $" + totalCaja);
-            writer.println("===========================================");
+            writer.println("======= REPORTE DE VENTAS - MACADAMIA =======");
+            writer.println("Fecha: " + fecha);
+            writer.println("=============================================");
 
-            // SECCIÓN 1: Ventas Extras (Lo nuevo)
-            if (!ventasExtras.isEmpty()) {
-                writer.println("\n--- DETALLE DE VENTAS EXTRAS/OTROS ---");
-                writer.println(String.format("%-20s | %-5s | %-10s", "Producto", "Cant", "Total"));
-                writer.println("-------------------------------------------");
-                for (Caja.RegistroVenta v : ventasExtras) {
-                    writer.println(String.format("%-20s | %-5d | $%-10.2f", v.nombre, v.cantidad, v.total));
-                }
+            // 1. RESUMEN DE INGRESOS POR MEDIO DE PAGO
+            writer.println("\n--- RESUMEN DE CAJA ---");
+            writer.println(String.format("Efectivo:  $%.2f", caja.getEfectivo()));
+            writer.println(String.format("Nequi:     $%.2f", caja.getNequi()));
+            writer.println(String.format("Daviplata: $%.2f", caja.getDaviplata()));
+            writer.println("---------------------------------------------");
+            writer.println(String.format("TOTAL DÍA: $%.2f", caja.getIngresosTotales()));
+
+            // 2. DETALLE DE TRANSACCIONES
+            writer.println("\n--- DETALLE DE VENTAS ---");
+            writer.println(String.format("%-25s | %-5s | %-10s", "Producto [Pago]", "Cant", "Subtotal"));
+            writer.println("---------------------------------------------");
+
+            for (Caja.RegistroVenta v : caja.getHistorialVentas()) {
+                writer.println(String.format("%-25s | %-5d | $%-10.2f",
+                        v.nombre, v.cantidad, v.total));
             }
 
-            // SECCIÓN 2: Estado del Inventario
-            writer.println("\n--- ESTADO FINAL DEL INVENTARIO FIJO ---");
+            // 3. ESTADO DEL INVENTARIO
+            writer.println("\n--- STOCK FINAL ---");
             for (Producto p : inventario) {
-                writer.println("Producto: " + p.getnombre() + " | Stock Restante: " + p.getstock());
+                writer.println("- " + p.getnombre() + ": " + p.getstock() + " unidades.");
             }
 
-            System.out.println("✅ Reporte generado con éxito: " + nombreArchivo);
+            System.out.println("Reporte generado: " + nombreArchivo);
 
         } catch (IOException e) {
-            System.out.println("❌ Error al guardar el reporte: " + e.getMessage());
+            System.out.println("Error al crear el reporte: " + e.getMessage());
         }
-    }
-
-    public static void guardarCierre(ArrayList<Producto> listaProductos, double ingresosTotales) {
     }
 }
