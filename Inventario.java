@@ -19,9 +19,8 @@ public class Inventario {
     }
 
     private void cargarDesdeDB() {
-        lista.clear(); // Limpiamos la lista actual para no duplicar
+        lista.clear();
         String sql = "SELECT * FROM productos";
-
         try (Connection conn = ConexionDB.conectar();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -30,33 +29,46 @@ public class Inventario {
                 Producto p = new Producto(
                         rs.getString("nombre"),
                         rs.getDouble("precio"),
-                        rs.getInt("stock")
+                        rs.getInt("stock"),
+                        rs.getInt("maneja_stock") == 1,
+                        rs.getString("categoria") // <--- Cargamos la categoría
                 );
                 lista.add(p);
             }
         } catch (SQLException e) {
-            System.out.println("Error al cargar inventario: " + e.getMessage());
+            System.out.println("Error al guardar el producto" + e.getMessage());
         }
     }
 
     private void insertarDatosBase() {
-        // Esto solo se ejecuta la primerísima vez que corres el programa
-        registrarProductoEnDB(new Producto("Milhoja", 10000, 12));
-        registrarProductoEnDB(new Producto("Tiramisu", 8000, 10));
-        registrarProductoEnDB(new Producto("Merengon", 12000, 5));
-        System.out.println("Datos iniciales creados en la DB.");
+        registrarProductoEnDB(new Producto("Cheesecake", 12000, 10, true, "Postres"));
+        registrarProductoEnDB(new Producto("Café Americano", 5000, 0, false, "Bebidas"));
+        registrarProductoEnDB(new Producto("Capuchino", 7000, 0, false, "Bebidas"));
+        registrarProductoEnDB(new Producto("Muffin", 4500, 5, true, "Postres"));
     }
+
 
     // Metodo para guardar un nuevo producto en la DB
     public void registrarProductoEnDB(Producto p) {
-        String sql = "INSERT INTO productos(nombre, precio, stock) VALUES(?,?,?)";
+        // 1. Agregamos maneja_stock a la consulta SQL
+        String sql = "INSERT INTO productos(nombre, precio, stock, maneja_stock, categoria) VALUES(?,?,?,?,?)";
 
         try (Connection conn = ConexionDB.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, p.getnombre());
             pstmt.setDouble(2, p.getprecio());
             pstmt.setInt(3, p.getstock());
+            // 2. Enviamos el booleano convertido a 1 o 0
+            pstmt.setInt(4, p.isManejaStock() ? 1 : 0);
+            pstmt.setString(5, p.getCategoria());
+
             pstmt.executeUpdate();
+            pstmt.setString(1, p.getnombre());
+            pstmt.setDouble(2, p.getprecio());
+            pstmt.setInt(3, p.getstock());
+            pstmt.setInt(4, p.isManejaStock() ? 1 : 0);
+            pstmt.setString(5, p.getCategoria()); // <--- Guardamos la categoría
+
         } catch (SQLException e) {
             System.out.println("Error al guardar producto: " + e.getMessage());
         }
@@ -90,5 +102,19 @@ public class Inventario {
             if (p.getnombre().equalsIgnoreCase(nombre)) return p;
         }
         return null;
+    }
+
+    public void actualizarStockEnDB(String nombre, int nuevoStock) {
+        String sql = "UPDATE productos SET stock = ? WHERE nombre = ?";
+
+        try (Connection conn = ConexionDB.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, nuevoStock);
+            pstmt.setString(2, nombre);
+            pstmt.executeUpdate();
+            System.out.println("Stock sincronizado en DB para: " + nombre);
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar stock: " + e.getMessage());
+        }
     }
 }

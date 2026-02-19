@@ -24,7 +24,7 @@ public class Caja {
      * @param metodoPago "Efectivo", "Nequi" o "Daviplata".
      */
     public void registrarVenta(String producto, int cantidad, double total, String metodoPago) {
-        // 1. Sumamos al contador específico según el método de pago
+        // 1. Sumamos al contador específico según el metodo de pago
         switch (metodoPago) {
             case "Efectivo":
                 this.efectivo += total;
@@ -38,7 +38,7 @@ public class Caja {
         }
 
         // 2. Guardamos el registro en el historial para el reporte detallado
-        // Incluimos el método de pago en el nombre para que aparezca en el .txt
+        // Incluimos el metodo de pago en el nombre para que aparezca en el .txt
         String detalle = producto + " [" + metodoPago + "]";
         historialVentas.add(new RegistroVenta(detalle, cantidad, total));
     }
@@ -70,5 +70,12 @@ public class Caja {
             this.cantidad = cantidad;
             this.total = total;
         }
+    }
+    public String generarReporte() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("======= REPORTE DE CIERRE =======\n");
+        sb.append("Total en Caja: $").append(this.historialVentas).append("\n"); // Usa tu variable de saldo
+        sb.append("=================================");
+        return sb.toString();
     }
 }

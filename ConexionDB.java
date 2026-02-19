@@ -17,18 +17,30 @@ public class ConexionDB {
     }
 
     public static void crearTablas() {
-        String sql = "CREATE TABLE IF NOT EXISTS productos (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "nombre TEXT NOT NULL," +
-                "precio REAL NOT NULL," +
-                "stock INTEGER NOT NULL);";
+        String sql = "CREATE TABLE IF NOT EXISTS productos ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "nombre TEXT NOT NULL,"
+                + "precio REAL NOT NULL,"
+                + "stock INTEGER NOT NULL,"
+                + "maneja_stock INTEGER NOT NULL,"
+                + "categoria TEXT NOT NULL"
+                + ");";
 
         try (Connection conn = conectar();
              Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
-            System.out.println("Base de datos lista.");
+            System.out.println("Tabla productos lista con columna categoria.");
         } catch (SQLException e) {
-            System.out.println("Error al crear tablas: " + e.getMessage());
+            System.out.println("Error al crear tabla: " + e.getMessage());
         }
     }
+
+    String sql = "CREATE TABLE IF NOT EXISTS productos ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + "nombre TEXT NOT NULL,"
+            + "precio REAL NOT NULL,"
+            + "stock INTEGER NOT NULL,"
+            + "maneja_stock INTEGER NOT NULL,"
+            + "categoria TEXT NOT NULL" // <--- Nueva columna
+            + ");";
 }
