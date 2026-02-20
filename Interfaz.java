@@ -21,7 +21,7 @@ public class Interfaz extends JFrame {
 
         // --- 1. PANEL NORTE: CATEGORÍAS ---
         JPanel panelCategorias = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        String[] categorias = {"Bebidas", "Postres", "Varios"};
+        String[] categorias = {"Bebidas Calientes", "Bebidas frias", "Postres", "Galletas", "Tortas", "Desayunos", "Cocteles", "Otros", "Pasteles"};
 
         for (String cat : categorias) {
             JButton btnCat = new JButton(cat);
@@ -71,16 +71,37 @@ public class Interfaz extends JFrame {
         }
         panelProductos.revalidate(); // Re-calcula el diseño
         panelProductos.repaint();    // Pinta de nuevo los botones
+
     }
 
     private void agregarAlTicket(Producto p) {
-        // Aquí podrías pedir la cantidad con un JOptionPane si quieres
-        totalVentaActual += p.getprecio();
-        areaTicket.append("- " + p.getnombre() + " ($" + p.getprecio() + ")\n");
+        double precioFinal = p.getprecio();
 
+        // Si el precio es 0, es un producto personalizado (como tus Pasteles)
+        if (precioFinal == 0) {
+            String input = JOptionPane.showInputDialog(this,
+                    "Ingrese el precio para: " + p.getnombre(),
+                    "Precio Personalizado",
+                    JOptionPane.QUESTION_MESSAGE);
+
+            try {
+                if (input != null && !input.isEmpty()) {
+                    precioFinal = Double.parseDouble(input);
+                } else {
+                    return; // Si cancela, no agregamos nada al ticket
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Precio inválido. Use solo números.");
+                return;
+            }
+        }
+
+        // El resto del código que ya tenías:
+        totalVentaActual += precioFinal;
+        areaTicket.append("- " + p.getnombre() + " ($" + String.format("%.0f", precioFinal) + ")\n");
+
+        // Actualizamos el botón de cobrar con el nuevo total
         btnCobrar.setText("COBRAR (TOTAL: $" + String.format("%.0f", totalVentaActual) + ")");
-
-        areaTicket.setCaretPosition(areaTicket.getDocument().getLength());
     }
 
     private void finalizarVenta() {
